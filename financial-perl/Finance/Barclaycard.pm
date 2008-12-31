@@ -9,11 +9,6 @@ require Digest::MD5;
 
 our $start_url = "https://www.barclaycard.de/";
 
-sub new {
-    my ($class) = @_;
-    $class->Finance::GenericWebBot::new();
-}
-
 sub credentials {
     my ($self, $id, $pin, $surname, $password) = @_;
     
@@ -21,14 +16,14 @@ sub credentials {
     $self->{credentials}{password} = $password if defined $password;
 
     return 
-        $self->Finance::GenericWebBot::credentials($id, $pin) &&
+        $self->SUPER::credentials($id, $pin) &&
         defined $self->{credentials}{surname} &&
         defined $self->{credentials}{password};
 }
 
 sub init {
     my ($self) = @_;
-    $self->Finance::GenericWebBot::init();
+    $self->SUPER::init();
 }
 
 sub login {

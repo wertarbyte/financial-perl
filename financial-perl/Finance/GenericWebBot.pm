@@ -39,9 +39,15 @@ sub transactions {
     return ();
 }
 
+sub create_checksum {
+    my ($self, @data) = @_;
+    return Digest::MD5::md5_hex(join "", $self->{credentials{id}, @data);
+}
+
 sub construct_transaction {
     my ($self, $receipt, $booked, $amount, $description) = @_;
-    return { checksum => Digest::MD5->md5_hex($receipt.$booked.$description.$amount), booked => $booked, desc => $description, amount => $amount, receipt => $receipt };
+    my $hash = $self->create_checksum($receipt, $booked, $amount, $description);
+    return { checksum => $hash, booked => $booked, desc => $description, amount => $amount, receipt => $receipt };
 }
 
 1;
