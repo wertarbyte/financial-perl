@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 use strict;
+use FindBin;
+use lib "$FindBin::Bin/";
+
 use Finance::Barclaycard;
 use Finance::SantanderCC;
 use Data::Dumper;
