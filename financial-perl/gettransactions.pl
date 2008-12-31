@@ -6,6 +6,7 @@ use lib "$FindBin::Bin/";
 
 use Finance::Barclaycard;
 use Finance::SantanderCC;
+use Finance::MercedesBenzBank;
 use Data::Dumper;
 use Getopt::Long;
 
@@ -40,6 +41,7 @@ if ($read_credentials) {
 
 my %mods = (
     barclaycard => "Finance::Barclaycard",
+    mercedesbenzbank => "Finance::MercedesBenzBank",
     santandercc => "Finance::SantanderCC"
 );
 

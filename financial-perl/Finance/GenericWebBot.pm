@@ -41,7 +41,7 @@ sub transactions {
 
 sub create_checksum {
     my ($self, @data) = @_;
-    return Digest::MD5::md5_hex(join "", $self->{credentials}{id}, @data);
+    return Digest::MD5::md5_hex(join "", ref $self, $self->{credentials}{id}, @data);
 }
 
 sub construct_transaction {
