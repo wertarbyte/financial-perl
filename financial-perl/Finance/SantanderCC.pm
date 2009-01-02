@@ -4,7 +4,7 @@ require Finance::GenericWebBot;
 
 use strict;
 
-our $start_url = "http://santander.de/de/privatkunden/index.html";
+our $start_url = "https://www.kreditkartenbanking.de/santander/cas/dispatch.do?bt_PRELON=1&ref=1600&service=COS";
 
 sub __fix_links {
     my $m = shift;
@@ -18,8 +18,6 @@ sub login {
     my $m = $self->{mech};
 
     $m->get($start_url);
-    $m->follow_link( text => "Zum Kreditkartenbanking" );
-    __fix_links($m);
 
     $m->form_name("preLogonForm");
 
