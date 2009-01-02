@@ -57,9 +57,10 @@ sub create_checksum {
 }
 
 sub construct_transaction {
-    my ($self, $receipt, $booked, $amount, $description) = @_;
-    my $hash = $self->create_checksum($receipt, $booked, $amount, $description);
-    return { checksum => $hash, booked => $booked, desc => $description, amount => $amount, receipt => $receipt };
+    my ($self, $receipt, $booked, $amount, $description, $currency) = @_;
+    $currency = "EUR" unless defined $currency;
+    my $hash = $self->create_checksum($receipt, $booked, $amount, $description, $currency);
+    return { checksum => $hash, booked => $booked, desc => $description, amount => $amount, receipt => $receipt, currency => $currency };
 }
 
 sub csv {
@@ -78,7 +79,7 @@ sub formatted_output {
     
     for my $entry ( @{ $self->transactions( @args ) } ) {
         my $sign = ($entry->{amount} < 0) ? '-' : '+';
-        my $val = sprintf("% 8.2f EUR", abs $entry->{amount});
+        my $val = sprintf("% 8.2f %s", abs $entry->{amount}, $entry->{currency});
         $val =~ y/./,/;
         if ($format eq "csv") {
             $data .= $entry->{checksum}."\t".$entry->{booked}."\t".$entry->{receipt}."\t".$sign."\t".$val."\t".$entry->{desc}."\n";
