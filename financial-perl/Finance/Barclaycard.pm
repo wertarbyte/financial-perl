@@ -28,6 +28,7 @@ sub init {
 
 sub login {
     my ($self) = @_;
+    $self->SUPER::login();
     my $m = $self->{mech};
     
     $m->get($start_url);
@@ -100,6 +101,8 @@ sub extract_transactions {
 
 sub statements {
     my ($self) = @_;
+    my @statements;
+    push @statements, $self->SUPER::statements();
 
     my $m = $self->{mech};
     my @statements;
@@ -116,6 +119,7 @@ sub statements {
 sub transactions {
     my ($self, @labels) = @_;
     my @transactions;
+    push @transactions, $self->SUPER::transactions(@labels);
     my $m = $self->{mech};
 
     my %fetch;
@@ -164,7 +168,6 @@ sub transactions {
         print STDERR "Unable to retrieve data for '$k'.\n";
     }
 
-    print STDERR "returning $#transactions transactions\n";
     return [ sort {$a->{booked} cmp $b->{booked}} @transactions ];
 }
 

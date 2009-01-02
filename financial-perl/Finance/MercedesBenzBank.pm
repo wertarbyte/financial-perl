@@ -10,6 +10,7 @@ our $start_url = "https://www.mercedes-benz-bank.de/";
 
 sub login {
     my ($self) = @_;
+    $self->SUPER::login();
     my $m = $self->{mech};
     $m->get($start_url);
     $m->follow_link( text => "Login Online Banking");
@@ -30,6 +31,8 @@ sub credentials {
 }
 
 sub statements {
+    my ($self) = @_;
+    my @s = $self->SUPER::statements();
     return ("48");
 }
 
@@ -41,13 +44,15 @@ our %key_table = (
 
 sub transactions {
     my ($self, @trans) = @_;
+    my @book;
+    push @book, $self->SUPER::transactions(@trans);
+
     my $m = $self->{mech};
     $m->form_with_fields( "period" );
     $m->set_visible( [ option => "48 Monate" ] );
     $m->click( '$$event_refresh' );
     $m->follow_link( text_regex => qr{Drucken} );
     
-    my @book;
 
     my $tree = new HTML::TreeBuilder;
     $tree->parse($m->content);

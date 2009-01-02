@@ -4,7 +4,7 @@ require Finance::GenericWebBot;
 
 use strict;
 
-our $start_url = "https://www.kreditkartenbanking.de/santander/cas/dispatch.do?bt_PRELON=1&ref=1600&service=COS";
+our $start_url = "https://www.kreditkartenbanking.de/santander";
 
 sub __fix_links {
     my $m = shift;
@@ -15,11 +15,13 @@ sub __fix_links {
 
 sub login {
     my ($self) = @_;
+    $self->SUPER::login();
     my $m = $self->{mech};
 
     $m->get($start_url);
 
     $m->form_name("preLogonForm");
+    __fix_links $m;
 
     $m->field("user", $self->{credentials}{id} );
     $m->field("password", $self->{credentials}{pin});
@@ -68,6 +70,7 @@ sub extract_transactions {
 sub statements {
     my ($self) = @_;
     my @s;
+    push @s, $self->SUPER::statements();
     push @s, "current";
     my $m = $self->{mech};
     $m->follow_link( url_regex => qr/bt_STMTLIST=do/ );
@@ -82,6 +85,7 @@ sub statements {
 sub transactions {
     my ($self, @labels) = @_;
     my @transactions;
+    push @transactions, $self->SUPER::transactions();
     my $m = $self->{mech};
 
     my %fetch;
