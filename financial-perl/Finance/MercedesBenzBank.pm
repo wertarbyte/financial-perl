@@ -8,6 +8,11 @@ use strict;
 
 our $start_url = "https://www.mercedes-benz-bank.de/";
 
+sub required_credentials {
+    my ($class) = @_;
+    return ("customer number", "PIN", "account number");
+}
+
 sub login {
     my ($self) = @_;
     $self->SUPER::login();

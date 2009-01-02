@@ -6,6 +6,11 @@ use strict;
 
 our $start_url = "https://www.kreditkartenbanking.de/santander";
 
+sub required_credentials {
+    my ($class) = @_;
+    return ("cardnumber", "PIN");
+}
+
 sub __fix_links {
     my $m = shift;
     my $data = $m->content();

@@ -9,6 +9,11 @@ require Digest::MD5;
 
 our $start_url = "https://www.barclaycard.de/";
 
+sub required_credentials {
+    my ($class) = @_;
+    return ("Online ID", "PIN", "Surname", "Password");
+}
+
 sub credentials {
     my ($self, $id, $pin, $surname, $password) = @_;
     

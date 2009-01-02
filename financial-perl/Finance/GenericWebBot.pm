@@ -22,6 +22,11 @@ sub credentials {
         defined $self->{credentials}{pin};
 }
 
+sub required_credentials {
+    my ($class) = @_;
+    return ();
+}
+
 sub init {
     my ($self) = @_;
     my $m = $self->{mech};

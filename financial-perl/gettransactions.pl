@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+#
+# Retrieve transactions from a specific Finance perl module.
+#
+# by Stefan Tomanek <stefan.tomanek@wertarbyte.de>
 
 use strict;
 use FindBin;
@@ -19,14 +24,38 @@ my @statements = ();
 my $output_format = "csv";
 my $list_statements = 0;
 
-my $result = GetOptions (
-    "m|module=s"     => \$module,
-    "credentials=s"  => \@credentials,
+my $help = 1;
+
+my $parsing = GetOptions(
+    "m|module=s"       => \$module,
+    "credentials=s"    => \@credentials,
     "read-credentials" => \$read_credentials,
-    "l|list"       => \$list_statements,
-    "format|f=s"   => \$output_format,
-    "s|statements=s" => \@statements
+    "l|list"           => \$list_statements,
+    "format|f=s"       => \$output_format,
+    "s|statements=s"   => \@statements,
+    "h|help"           => \$help
 );
+unless ($parsing) {
+    print STDERR "Error parsing command line!\n";
+    $help = 1;
+}
+
+if ($help) {
+    print STDERR <<EOF
+gettransactions.pl
+
+--module           The retrieval module to use (barclaycard, mercedesbenzbank, santandercc)
+--credentials      Comma seperated list of credentials to be used
+--read-credentials Read credentials from STDIN, one per line
+
+--format           Output format (csv or qif)
+--statements       Comma seperated list of specific statements to be retrieved
+--list             List available statements for a specific module
+
+--help             Display this help text
+
+EOF
+}
 
 @statements = split(/,/,join(',',@statements));
 push @statements, "default" unless @statements;
@@ -47,6 +76,14 @@ my %mods = (
 
 unless (defined $mods{$module}) {
     print STDERR "Unknown module '$module'.\n";
+    exit 1;
+}
+if ($help) {
+    print STDERR "Credentials required for $module:\n";
+    for my $c ($mods{$module}->required_credentials) {
+        print STDERR "* $c\n";
+    }
+    print STDERR "\n";
     exit 1;
 }
 
