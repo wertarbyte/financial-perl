@@ -24,7 +24,7 @@ my @statements = ();
 my $output_format = "csv";
 my $list_statements = 0;
 
-my $help = 1;
+my $help = 0;
 
 my $parsing = GetOptions(
     "m|module=s"       => \$module,
