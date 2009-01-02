@@ -12,6 +12,7 @@ use lib "$FindBin::Bin/";
 use Finance::Barclaycard;
 use Finance::SantanderCC;
 use Finance::MercedesBenzBank;
+use Finance::Paypal;
 use Data::Dumper;
 use Getopt::Long;
 
@@ -44,7 +45,7 @@ if ($help) {
     print STDERR <<EOF
 gettransactions.pl
 
---module           The retrieval module to use (barclaycard, mercedesbenzbank, santandercc)
+--module           The retrieval module to use (barclaycard, mercedesbenzbank, santandercc, paypal)
 --credentials      Comma seperated list of credentials to be used
 --read-credentials Read credentials from STDIN, one per line
 
@@ -71,7 +72,8 @@ if ($read_credentials) {
 my %mods = (
     barclaycard => "Finance::Barclaycard",
     mercedesbenzbank => "Finance::MercedesBenzBank",
-    santandercc => "Finance::SantanderCC"
+    santandercc => "Finance::SantanderCC",
+    paypal => "Finance::Paypal"
 );
 
 unless (defined $mods{$module}) {
