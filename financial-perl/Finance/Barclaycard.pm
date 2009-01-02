@@ -164,6 +164,7 @@ sub transactions {
         print STDERR "Unable to retrieve data for '$k'.\n";
     }
 
+    print STDERR "returning $#transactions transactions\n";
     return [ sort {$a->{booked} cmp $b->{booked}} @transactions ];
 }
 

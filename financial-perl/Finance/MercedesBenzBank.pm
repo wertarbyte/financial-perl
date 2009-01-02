@@ -18,8 +18,7 @@ sub login {
     $m->field( "password", $self->{credentials}{pin} );
     $m->click( '$$event_login' );
     my $acc = $self->{credentials}{account};
-    #$m->follow_link( url_regex => qr{acountNo=$acc});
-    $m->follow_link( text_regex => qr{Tagesgeldkonto});
+    $m->follow_link( url_regex => qr/accountNo=\Q$acc\E/ );
 }
 
 sub credentials {
@@ -31,7 +30,7 @@ sub credentials {
 }
 
 sub statements {
-    return ();
+    return ("48");
 }
 
 our %key_table = (
