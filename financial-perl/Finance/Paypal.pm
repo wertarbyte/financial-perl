@@ -63,9 +63,9 @@ sub transactions {
         $amount =~ s/,/./;
         $amount *= 1;
 
-        my $currency = $l[7];
+        my $currency = $l[6];
         
-        my $description = $l[4].", ".$l[5].": ".$l[16];
+        my $description = $l[3].", ".$l[6].": ".$l[15];
         my $entry = $self->construct_transaction( $date, $date, $amount, $description, $currency);
         push @book, $entry;
     }
