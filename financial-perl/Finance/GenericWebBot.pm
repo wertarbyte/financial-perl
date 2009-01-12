@@ -8,7 +8,11 @@ sub new {
     my ($class) = @_;
     my $me = {};
     my $being = bless $me, $class;
-    $me->{mech} = new WWW::Mechanize(autocheck => 1, onerror => sub { $being->mech_error(@_) });
+    $me->{mech} = new WWW::Mechanize(
+        autocheck => 1,
+        onerror => sub { $being->mech_error(@_) }
+    );
+    $me->{mech}->agent_alias("Linux Mozilla");
     return $being;
 }
 

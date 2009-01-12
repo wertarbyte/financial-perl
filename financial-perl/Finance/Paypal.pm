@@ -51,19 +51,21 @@ sub transactions {
     
     my $i = 0;
     for my $line (split /\n/, $csvdata) {
-        next unless $i++;
-
         my @l = split /\t/, $line;
         map {s/(^")|("$)//g} @l;
+        if ($i++ == 0) {
+            last unless $l[0] eq "Datum";
+            next;
+        }
         my $date = $l[0];
         $date =~ s/^([0-9]{2})\.([0-9]{2})\.([0-9]{4})$/$3-$2-$1/;
         my $amount = $l[9];
         $amount =~ s/,/./;
         $amount *= 1;
 
-        my $currency = $l[6];
+        my $currency = $l[7];
         
-        my $description = $l[3].", ".$l[4].": ".$l[15];
+        my $description = $l[4].", ".$l[5].": ".$l[16];
         my $entry = $self->construct_transaction( $date, $date, $amount, $description, $currency);
         push @book, $entry;
     }

@@ -53,7 +53,8 @@ sub transactions {
     push @book, $self->SUPER::transactions(@trans);
 
     my $m = $self->{mech};
-    $m->form_with_fields( "period" );
+    #$m->form_with_fields( "period" );
+    $m->form_number( 3 );
     $m->set_visible( [ option => "48 Monate" ] );
     $m->click( '$$event_refresh' );
     $m->follow_link( text_regex => qr{Drucken} );
