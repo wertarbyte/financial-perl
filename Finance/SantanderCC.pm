@@ -65,6 +65,8 @@ sub extract_transactions {
         } else {
             $receipt = $cells[0]->as_trimmed_text();
             #push @book, { md5 => Digest::MD5->md5_hex($receipt.$booked.$desc.$value), booked => $booked, desc => $desc, amount => $value, receipt => $receipt};
+            $booked =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{4})/\3-\2-\1/;
+            $receipt =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{4})/\3-\2-\1/;
             push @book, $self->construct_transaction( $receipt, $booked, $value, $desc );
         }
     }
