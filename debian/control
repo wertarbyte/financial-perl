@@ -1,0 +1,14 @@
+Source: financial-perl
+Section: unknown
+Priority: extra
+Maintainer: Stefan Tomanek <stefan@pico.ruhr.de>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.3
+Homepage: http://stefans.datenbruch.de/gnucash/
+
+Package: financial-perl
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Financial tools to extract account data
+ This package contains various perl modules to query several
+ financial institutions for account data.
