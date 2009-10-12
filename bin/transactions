@@ -6,8 +6,6 @@
 # by Stefan Tomanek <stefan.tomanek@wertarbyte.de>
 
 use strict;
-use FindBin;
-use lib "$FindBin::Bin/";
 
 use Finance::Barclaycard;
 use Finance::SantanderCC;
@@ -43,7 +41,7 @@ unless ($parsing) {
 
 if ($help) {
     print STDERR <<EOF
-gettransactions.pl
+transactions
 
 --module           The retrieval module to use (barclaycard, mercedesbenzbank, santandercc, paypal)
 --credentials      Comma seperated list of credentials to be used
