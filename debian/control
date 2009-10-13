@@ -1,5 +1,5 @@
 Source: financial-perl
-Section: unknown
+Section: utils
 Priority: extra
 Maintainer: Stefan Tomanek <stefan@pico.ruhr.de>
 Build-Depends: debhelper (>= 7)
