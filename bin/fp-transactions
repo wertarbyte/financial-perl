@@ -41,7 +41,7 @@ unless ($parsing) {
 
 if ($help) {
     print STDERR <<EOF
-transactions
+fp-transactions
 
 --module           The retrieval module to use (barclaycard, mercedesbenzbank, santandercc, paypal)
 --credentials      Comma seperated list of credentials to be used
