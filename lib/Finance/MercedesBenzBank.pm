@@ -1,15 +1,14 @@
 package Finance::MercedesBenzBank;
-require Finance::GenericWebBot;
+use base "Finance::GenericWebBot";
+
 require HTML::TreeBuilder;
 require Unicode::String;
-@ISA = ("Finance::GenericWebBot");
 
 use strict;
 
 our $start_url = "https://www.mercedes-benz-bank.de/";
 
 sub required_credentials {
-    my ($class) = @_;
     return ("customer number", "PIN", "account number");
 }
 
@@ -20,10 +19,10 @@ sub login {
     $m->get($start_url);
     $m->follow_link( text => "Login Online Banking");
     $m->form_number(2);
-    $m->field( "username", $self->{credentials}{id} );
-    $m->field( "password", $self->{credentials}{pin} );
+    $m->field( "username", $self->{credentials}{"customer number"} );
+    $m->field( "password", $self->{credentials}{"PIN"} );
     $m->click( '$$event_login' );
-    my $acc = $self->{credentials}{account};
+    my $acc = $self->{credentials}{"account number"};
     $m->follow_link( url_regex => qr/accountNo=\Q$acc\E/ );
 }
 
@@ -38,7 +37,7 @@ sub credentials {
 sub statements {
     my ($self) = @_;
     my @s = $self->SUPER::statements();
-    return ("48");
+    return (@s, "48");
 }
 
 our %key_table = (

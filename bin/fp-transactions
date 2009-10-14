@@ -93,7 +93,13 @@ unless (lc $output_format eq "csv" || lc $output_format eq "qif") {
 }
 
 my $cc = $mods{$module}->new;
-unless ($cc->credentials( @credentials )) {
+
+# feed credential information to module
+for my $name ($cc->required_credentials()) {
+    last unless @credentials;
+    $cc->add_credential( $name, shift @credentials );
+}
+unless ($cc->credentials_sufficient()) {
     print STDERR "Insufficient credentials for this Module.\n";
     print STDERR "Either specify --credentials or feed them through STDIN using --read-credentials.\n";
     exit 1;

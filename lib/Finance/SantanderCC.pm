@@ -1,13 +1,11 @@
 package Finance::SantanderCC;
-require Finance::GenericWebBot;
-@ISA = ("Finance::GenericWebBot");
+use base "Finance::GenericWebBot";
 
 use strict;
 
 our $start_url = "https://www.kreditkartenbanking.de/santander";
 
 sub required_credentials {
-    my ($class) = @_;
     return ("cardnumber", "PIN");
 }
 
@@ -28,8 +26,8 @@ sub login {
     $m->form_name("preLogonForm");
     __fix_links $m;
 
-    $m->field("user", $self->{credentials}{id} );
-    $m->field("password", $self->{credentials}{pin});
+    $m->field("user", $self->{credentials}{"cardnumber"} );
+    $m->field("password", $self->{credentials}{"PIN"});
     $m->click_button( name => "bt_LOGON");
 
     __fix_links $m;
