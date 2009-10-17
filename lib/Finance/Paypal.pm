@@ -1,7 +1,8 @@
 package Finance::Paypal;
+use base "Finance::GenericWebBot";
+
 require Finance::GenericWebBot;
 require HTML::TreeBuilder;
-@ISA = ("Finance::GenericWebBot");
 
 use strict;
 
@@ -19,8 +20,8 @@ sub login {
     $m->get($start_url);
     $m->follow_link( text => "Einloggen");
     $m->form_name("login_form");
-    $m->field( "login_email", $self->{credentials}{id} );
-    $m->field( "login_password", $self->{credentials}{pin} );
+    $m->field( "login_email", $self->{credentials}{"e-mail address"} );
+    $m->field( "login_password", $self->{credentials}{"password"} );
     $m->click( 'submit.x' );
 
     $m->follow_link( url_regex => qr{cmd=_login-done} );
@@ -43,11 +44,12 @@ sub transactions {
     $m->form_name( "form1" );
     $m->field( "from_b", 1 );
     $m->field( "from_a", 1 );
-    $m->field( "from_c", 2000 );
+    $m->field( "from_c", 2008 );
     $m->select( "custom_file_type", "tabdelim_allactivity" );
     $m->click("submit.x");
     
     my $csvdata = $m->content();
+    print $csvdata, "\n";
     
     my $i = 0;
     for my $line (split /\n/, $csvdata) {

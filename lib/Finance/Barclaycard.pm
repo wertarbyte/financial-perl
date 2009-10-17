@@ -1,6 +1,5 @@
 package Finance::Barclaycard;
-require Finance::GenericWebBot;
-@ISA = ("Finance::GenericWebBot");
+use base "Finance::GenericWebBot";
 
 use strict;
 
@@ -10,25 +9,7 @@ require Digest::MD5;
 our $start_url = "https://www.barclaycard.de/";
 
 sub required_credentials {
-    my ($class) = @_;
     return ("Online ID", "PIN", "Surname", "Password");
-}
-
-sub credentials {
-    my ($self, $id, $pin, $surname, $password) = @_;
-    
-    $self->{credentials}{surname} = $surname if defined $surname;
-    $self->{credentials}{password} = $password if defined $password;
-
-    return 
-        $self->SUPER::credentials($id, $pin) &&
-        defined $self->{credentials}{surname} &&
-        defined $self->{credentials}{password};
-}
-
-sub init {
-    my ($self) = @_;
-    $self->SUPER::init();
 }
 
 sub login {
@@ -43,21 +24,21 @@ sub login {
     $m->submit_form(
         form_name => "FORM1",
         fields    => {
-            F_CSP1_1_FE_LOGIN_ID   => $self->{credentials}{id},
-            F_CSP1_1_FE_LOGIN_NAME => $self->{credentials}{surname},
+            F_CSP1_1_FE_LOGIN_ID   => $self->{credentials}{"Online ID"},
+            F_CSP1_1_FE_LOGIN_NAME => $self->{credentials}{"Surname"},
         }
     );
     
     my $data = $m->content();
     my @mem; 
     while ( $data =~ /(for="F_CSP1_2_FE_LOGIN_MEMWORD([12])">Stelle Nr\. ([0-9]+)<\/label>)/g) {
-        $mem[$2-1] = substr($self->{credentials}{password}, $3-1, 1);
+        $mem[$2-1] = substr($self->{credentials}{"Password"}, $3-1, 1);
     }
 
     $m->submit_form( 
         form_name => "FORM1",
         fields    => {
-            F_CSP1_2_FE_LOGIN_PIN => $self->{credentials}{pin},
+            F_CSP1_2_FE_LOGIN_PIN => $self->{credentials}{"PIN"},
             F_CSP1_2_FE_LOGIN_MEMWORD1 => $mem[0],
             F_CSP1_2_FE_LOGIN_MEMWORD2 => $mem[1]
         }

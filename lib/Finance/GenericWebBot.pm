@@ -12,18 +12,24 @@ sub new {
         autocheck => 1,
         onerror => sub { $being->mech_error(@_) }
     );
+    $me->{credentials} = ();
     $me->{mech}->agent_alias("Linux Mozilla");
     return $being;
 }
 
-sub credentials {
-    my ($self, $id, $pin) = @_;
-    
-    $self->{credentials}{id} = $id if defined $id;
-    $self->{credentials}{pin} = $pin if defined $pin;
-    return 
-        defined $self->{credentials}{id} &&
-        defined $self->{credentials}{pin};
+sub add_credential {
+    my ($self, $name, $value) = @_;
+    # TODO check the credentials name for validity
+    $self->{credentials}{$name} = $value;
+}
+
+sub credentials_sufficient {
+    my ($self) = @_;
+    # return whether all credentials are entered
+    for my $c ($self->required_credentials()) {
+        return 0 unless defined $self->{credentials}{$c};
+    }
+    return 1;
 }
 
 sub required_credentials {
