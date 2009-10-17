@@ -1,12 +1,16 @@
 package Finance::Barclaycard;
-use base "Finance::GenericWebBot";
+use base "Finance::WebCounter";
 
 use strict;
 
 require HTML::TreeBuilder;
-require Digest::MD5;
 
 our $start_url = "https://www.barclaycard.de/";
+
+sub id {
+    my ($self) = @_;
+    return $self->{credentials}{"Online ID"};
+}
 
 sub required_credentials {
     return ("Online ID", "PIN", "Surname", "Password");
@@ -78,7 +82,6 @@ sub extract_transactions {
             my ($amount, $sign) = ($value =~ m/([0-9]+)([^[:digit:]]+)/);
             $amount /= 100;
             $amount *= -1 unless ($sign eq "+");
-            #push @book, { md5 => Digest::MD5->md5_hex($receipt.$booked.$desc.$amount), receipt => $receipt, booked => $booked, desc => $desc, amount => $amount };
             push @book, $self->construct_transaction( $receipt, $booked, $amount, $desc );
         }
     }

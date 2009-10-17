@@ -1,5 +1,5 @@
 package Finance::MercedesBenzBank;
-use base "Finance::GenericWebBot";
+use base "Finance::WebCounter";
 
 require HTML::TreeBuilder;
 require Unicode::String;
@@ -7,6 +7,11 @@ require Unicode::String;
 use strict;
 
 our $start_url = "https://www.mercedes-benz-bank.de/";
+
+sub id {
+    my ($self) = @_;
+    return $self->{credentials}{"account number"};
+}
 
 sub required_credentials {
     return ("customer number", "PIN", "account number");
@@ -24,14 +29,6 @@ sub login {
     $m->click( '$$event_login' );
     my $acc = $self->{credentials}{"account number"};
     $m->follow_link( url_regex => qr/accountNo=\Q$acc\E/ );
-}
-
-sub credentials {
-    my ($self, $id, $pin, $account) = @_;
-    $self->{credentials}{account} = $account if defined $account;
-
-    return $self->SUPER::credentials($id, $pin) &&
-           defined $account;
 }
 
 sub statements {

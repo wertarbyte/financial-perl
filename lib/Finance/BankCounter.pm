@@ -1,56 +1,18 @@
-package Finance::GenericWebBot;
+package Finance::BankCounter;
 use strict;
 
-require WWW::Mechanize;
 require Digest::MD5;
 
 sub new {
     my ($class) = @_;
     my $me = {};
     my $being = bless $me, $class;
-    $me->{mech} = new WWW::Mechanize(
-        autocheck => 1,
-        onerror => sub { $being->mech_error(@_) }
-    );
-    $me->{credentials} = ();
-    $me->{mech}->agent_alias("Linux Mozilla");
     return $being;
 }
 
-sub add_credential {
-    my ($self, $name, $value) = @_;
-    # TODO check the credentials name for validity
-    $self->{credentials}{$name} = $value;
-}
-
-sub credentials_sufficient {
-    my ($self) = @_;
-    # return whether all credentials are entered
-    for my $c ($self->required_credentials()) {
-        return 0 unless defined $self->{credentials}{$c};
-    }
-    return 1;
-}
-
-sub required_credentials {
-    my ($class) = @_;
-    return ();
-}
-
-sub init {
-    my ($self) = @_;
-    my $m = $self->{mech};
-    $m->agent_alias("Linux Mozilla");
-    $self->login();
-}
-
-sub mech_error {
-    my ($self, @args) = @_;
-    print "WWW::Mechanize error: ", @args, "\n";
-    exit 1;
-}
-
-sub login {
+sub id {
+    # overload this method to pass a unique ID for each account
+    return 0;
 }
 
 sub statements {
@@ -63,7 +25,7 @@ sub transactions {
 
 sub create_checksum {
     my ($self, @data) = @_;
-    return Digest::MD5::md5_hex(join "", ref $self, $self->{credentials}{id}, @data);
+    return Digest::MD5::md5_hex(join "", ref $self, $self->id(), @data);
 }
 
 sub construct_transaction {
