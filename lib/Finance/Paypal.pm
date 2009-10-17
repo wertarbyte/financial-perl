@@ -1,12 +1,17 @@
 package Finance::Paypal;
-use base "Finance::GenericWebBot";
+use base "Finance::WebCounter";
 
-require Finance::GenericWebBot;
+require Finance::WebCounter;
 require HTML::TreeBuilder;
 
 use strict;
 
 our $start_url = "https://www.paypal.de/";
+
+sub id {
+    my ($self) = @_;
+    return $self->{credentials}{"e-mail address"};
+}
 
 sub required_credentials {
     my ($class) = @_;

@@ -11,7 +11,6 @@ use Finance::Barclaycard;
 use Finance::SantanderCC;
 use Finance::MercedesBenzBank;
 use Finance::Paypal;
-use Data::Dumper;
 use Getopt::Long;
 
 my $module;
