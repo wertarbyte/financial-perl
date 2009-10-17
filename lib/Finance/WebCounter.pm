@@ -10,10 +10,10 @@ sub new {
 
     $me->{mech} = new WWW::Mechanize(
         autocheck => 1,
-        onerror => sub { $being->mech_error(@_) }
+        onerror => sub { $me->mech_error(@_) }
     );
     $me->{credentials} = ();
-    return $being;
+    return $me;
 }
 
 sub add_credential {

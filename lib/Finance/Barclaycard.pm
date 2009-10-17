@@ -96,8 +96,8 @@ sub statements {
     my $m = $self->{mech};
     my @statements;
     push @statements, "current", "latest";
-    $m->follow_link( text => "Umsätze seit dem letzten Kontoauszug" );
-    $m->follow_link( text => "Vorherige Kontoauszüge" );
+    $m->follow_link( text_regex => qr/seit dem letzten Kontoauszug/ );
+    $m->follow_link( text_regex => qr/Vorherige Kontoausz/ );
     my $page = $m->content();
     while ($page =~ m!<option value="[0-9]+">([0-9]{4}-[0-9]{2})</option>!g) {
         push @statements, $1;
@@ -120,10 +120,10 @@ sub transactions {
         }
         $fetch{$l} = 1;
     }
-    $m->follow_link( text => "Umsätze seit dem letzten Kontoauszug" );
+    $m->follow_link( text_regex => qr/seit dem letzten Kontoauszug/ );
 
     if ($fetch{current} || $fetch{all}) {
-        $m->follow_link( text => "Umsätze seit dem letzten Kontoauszug" );
+        $m->follow_link( text_regex => qr/seit dem letzten Kontoauszug/ );
         push @transactions, $self->extract_transactions();
         $fetch{current} = 0;
     }
@@ -136,7 +136,7 @@ sub transactions {
     for my $k (keys %fetch) {
         next unless $fetch{$k};
         # if there are still unfetched statements, we have to check all of them
-        $m->follow_link( text => "Vorherige Kontoauszüge" );
+        $m->follow_link( text_regex => /Vorherige Kontoausz/ );
         my $page = $m->content();
         while ($page =~ m!<option value="[0-9]+">([0-9]{4}-[0-9]{2})</option>!g) {
             my $date = $1;
