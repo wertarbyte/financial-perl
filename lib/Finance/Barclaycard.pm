@@ -3,7 +3,7 @@ use base "Finance::WebCounter";
 
 use strict;
 
-require HTML::TreeBuilder;
+require HTML::TreeBuilder::XPath;
 
 our $start_url = "https://www.barclaycard.de/";
 
@@ -44,37 +44,35 @@ sub login {
 sub extract_transactions {
     my ($self) = @_;
     my $data = $self->{mech}->content();
-    # fix typo of barclays
-    $data =~ s/<dv /<div /g;
+    #print $data;
 
     my @book;
-    my $tree = new HTML::TreeBuilder;
+    my $tree = new HTML::TreeBuilder::XPath;
 
     $tree->parse($data);
-
-    for my $table ( $tree->look_down( "_tag" => "table", "class" => "transActList" ) ) {
-        my @rows = ( $table->look_down( "_tag" => "tr", "valign" => "top", "class" => qr/odd|even/ ) );
-        for my $row ( @rows ) {
-            my ($receipt, $booked, $desc, $value);
-            my @cells = ( $row->look_down( "_tag" => "td" ) );
-            if ($#cells == 2) {
-                ($receipt, $desc, $value) = map { $_->as_trimmed_text; } @cells;
-                $booked = $receipt;
-            } elsif ($#cells == 3) {
-                ($receipt, $booked, $desc, $value) = map { $_->as_trimmed_text; } @cells;
-            } else {
-                next;
-            }
-            # change date format to simplify sorting (let's hope we won't still use this script in 100 years)
-            $receipt =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
-            $booked =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
-            $value =~ s/[.,]//g;
-            my ($amount, $sign) = ($value =~ m/([0-9]+)([^[:digit:]]+)/);
+   
+    my $path = '//table[@class="umsaetze"]/tbody/tr/td';
+    my $col = 0;
+    my @set;
+    for my $node ( $tree->findnodes($path) ) {
+        my $t = $node->as_trimmed_text();
+        if ($col == 0 || $col == 1) {
+            $t =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
+            $set[$col] = $t;
+        } elsif ($col == 2) {
+            $set[3] = $t;
+        } elsif ($col == 3) {
+            $t =~ s/[.,]//g;
+            my ($amount, $sign) = ($t =~ m/([0-9]+)([^[:digit:]]+)/);
             $amount /= 100;
             $amount *= -1 unless ($sign eq "+");
-            push @book, $self->construct_transaction( $receipt, $booked, $amount, $desc );
+            $set[2] = $amount;
+
+            push @book, $self->construct_transaction( @set );
         }
+        $col = ($col+1)%4;
     }
+
     return @book;
 }
 
@@ -83,15 +81,8 @@ sub statements {
     my @statements;
     push @statements, $self->SUPER::statements();
 
-    my $m = $self->{mech};
     my @statements;
-    push @statements, "current", "latest";
-    $m->follow_link( text_regex => qr/seit dem letzten Kontoauszug/ );
-    $m->follow_link( text_regex => qr/Vorherige Kontoausz/ );
-    my $page = $m->content();
-    while ($page =~ m!<option value="[0-9]+">([0-9]{4}-[0-9]{2})</option>!g) {
-        push @statements, $1;
-    }
+    push @statements, "current";
     return @statements;
 }
 
@@ -105,38 +96,16 @@ sub transactions {
     LABEL: for my $l (@labels) {
         if ($l eq "default") {
             $fetch{current} = 1;
-            $fetch{latest} = 1;
             next LABEL;
         }
         $fetch{$l} = 1;
     }
-    $m->follow_link( text_regex => qr/seit dem letzten Kontoauszug/ );
+    $m->follow_link( text_regex => qr/Konto anzeigen/ );
 
     if ($fetch{current} || $fetch{all}) {
-        $m->follow_link( text_regex => qr/seit dem letzten Kontoauszug/ );
+        $m->follow_link( text_regex => qr/seit der letzten Konto.+bersicht/ );
         push @transactions, $self->extract_transactions();
         $fetch{current} = 0;
-    }
-    if ($fetch{latest} || $fetch{all}) {
-        $m->follow_link( text => "Letzter Kontoauszug" );
-        push @transactions, $self->extract_transactions();
-        $fetch{latest} = 0;
-    }
-    
-    for my $k (keys %fetch) {
-        next unless $fetch{$k};
-        # if there are still unfetched statements, we have to check all of them
-        $m->follow_link( text_regex => /Vorherige Kontoausz/ );
-        my $page = $m->content();
-        while ($page =~ m!<option value="[0-9]+">([0-9]{4}-[0-9]{2})</option>!g) {
-            my $date = $1;
-            next unless ($fetch{all} || $fetch{$date});
-            $m->form_name("FORM1");
-            $m->select("F_C2_2_FE_STATEMENT_DATE", $date);
-            $m->submit();
-            push @transactions, $self->extract_transactions();
-            $fetch{$date} = 0;
-        }
     }
 
     $fetch{all} = 0 if defined $fetch{all};
