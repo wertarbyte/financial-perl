@@ -22,31 +22,21 @@ sub login {
     my $m = $self->{mech};
     
     $m->get($start_url);
-    $m->follow_link( text => "Online-Kundenservice" );
-
-
-    $m->submit_form(
-        form_name => "FORM1",
-        fields    => {
-            F_CSP1_1_FE_LOGIN_ID   => $self->{credentials}{"Online ID"},
-            F_CSP1_1_FE_LOGIN_NAME => $self->{credentials}{"Surname"},
-        }
-    );
+    $m->follow_link( url_regex => qr/login\.php\?page=CSP1\.0/ );
     
     my $data = $m->content();
-    my @mem; 
-    while ( $data =~ /(for="F_CSP1_2_FE_LOGIN_MEMWORD([12])">Stelle Nr\. ([0-9]+)<\/label>)/g) {
-        $mem[$2-1] = substr($self->{credentials}{"Password"}, $3-1, 1);
+
+    $m->form_name("FORM1");
+
+    $m->field("F_CSP1_0_FE_LOGIN_ID", $self->{credentials}{"Online ID"});
+    $m->field("F_CSP1_0_FE_LOGIN_NAME", $self->{credentials}{"Surname"});
+    $m->field("F_CSP1_0_FE_LOGIN_PIN", $self->{credentials}{"PIN"});
+
+    while ( $data =~ /for="(F_CSP1_0_FE_LOGIN_MEMWORD[12])">Stelle Nr\. ([0-9]+)<\/label>/g) {
+        $m->field($1, substr($self->{credentials}{"Password"}, $2-1, 1));
     }
 
-    $m->submit_form( 
-        form_name => "FORM1",
-        fields    => {
-            F_CSP1_2_FE_LOGIN_PIN => $self->{credentials}{"PIN"},
-            F_CSP1_2_FE_LOGIN_MEMWORD1 => $mem[0],
-            F_CSP1_2_FE_LOGIN_MEMWORD2 => $mem[1]
-        }
-    );  
+    $m->submit();
 
     $m->follow_link( text => "HERE" );
 }
