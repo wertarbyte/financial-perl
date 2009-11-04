@@ -8,7 +8,7 @@ Homepage: http://stefans.datenbruch.de/gnucash/
 
 Package: financial-perl
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, libwww-mechanize-perl, libunicode-string-perl, libhtml-tree-perl
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, libwww-mechanize-perl, libunicode-string-perl, libhtml-tree-perl, libhtml-treebuilder-xpath-perl, xpdf-utils
 Description: Financial tools to extract account data
  This package contains various perl modules to query several
  financial institutions for account data.
