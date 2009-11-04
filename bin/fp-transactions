@@ -105,6 +105,12 @@ unless ($cc->credentials_sufficient()) {
 }
 $cc->init();
 
+if ($list_statements) {
+    print "Available statements for $module:\n";
+    print "* $_\n" for ($cc->statements());
+    exit 0;
+}
+
 if (lc $output_format eq "csv") {
     print $cc->csv(@statements);
 } elsif (lc $output_format eq "qif") {
