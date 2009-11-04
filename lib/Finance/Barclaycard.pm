@@ -45,7 +45,6 @@ sub login {
 sub extract_transactions {
     my ($self) = @_;
     my $data = $self->{mech}->content();
-    #print $data;
 
     my @book;
     my $tree = new HTML::TreeBuilder::XPath;
@@ -87,6 +86,33 @@ sub statements {
     return @statements;
 }
 
+sub __process_pdf {
+    my ($self) = @_;
+    my $pdf = new Finance::PDF2Text();
+    my $m = $self->{mech};
+    my @book;
+
+    my $text = $pdf->pdf2text( $m->content );
+    
+    for (split /\n/, $text) {
+        next unless /^([0-9]{2}\.[0-9]{2}\.[0-9]{2}) (.*?) (?:([0-9]{2}\.[0-9]{2}\.[0-9]{2}) )?([0-9,.]+[+-])$/;
+        my ($book, $desc, $rec, $value) = ($1, $2, $3, $4);
+        unless (defined $rec) {
+            $rec = $book;
+        }
+        $book =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
+        $rec =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
+        
+        $value =~ s/[.,]//g;
+        my ($amount, $sign) = ($value =~ m/([0-9]+)([^[:digit:]]+)/);
+        $amount /= 100;
+        $amount *= -1 unless ($sign eq "+");
+
+        push @book, $self->construct_transaction( $book, $rec, $amount, $desc );
+    }
+    return @book;
+}
+
 sub transactions {
     my ($self, @labels) = @_;
     my @transactions;
@@ -114,11 +140,10 @@ sub transactions {
         
         my @links = $m->find_all_links( url_regex => qr!https://www.barclaycard\.de//service.php\?page=C2\.2p! );
 
-        my $pdf = new Finance::PDF2Text();
 
         for (@links) {
             $m->get($_);
-            print $pdf->pdf2text( $m->content );
+            push @transactions, $self->__process_pdf();
             $m->back();
         }
     }
