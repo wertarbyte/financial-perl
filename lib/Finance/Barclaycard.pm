@@ -155,7 +155,7 @@ sub transactions {
 
     $m->follow_link( text_regex => qr/Konto.+bersichten anzeigen/ );
         
-    my $statement_url = qr!https://www.barclaycard\.de//service.php\?page=C2\.2p&month=([0-9]+)!;
+    my $statement_url = qr!service.php\?page=C2\.2p&month=([0-9]+)!;
     my @links = $m->find_all_links( url_regex => $statement_url );
 
     for (@links) {
