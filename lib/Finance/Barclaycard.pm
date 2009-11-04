@@ -5,6 +5,7 @@ use strict;
 
 require HTML::TreeBuilder::XPath;
 require Finance::PDF2Text;
+require File::Temp;
 
 our $start_url = "https://www.barclaycard.de/";
 
@@ -86,13 +87,30 @@ sub statements {
     return @statements;
 }
 
+sub __pdf2text {
+    my ($self, $pdfdata) = @_;
+    my $f = File::Temp->new(
+        TEMPLATE => "pdf2text.XXXXXX",
+        TMPDIR => 1,
+        UNLINK => 1
+    );
+    $f->write($pdfdata);
+    $f->close();
+
+    my $output;
+    open( PDF, "pdftotext -raw ".$f->filename." - |" );
+    while(<PDF>) {
+        $output .= $_;
+    }
+    return $output;
+}
+
 sub __process_pdf {
     my ($self) = @_;
-    my $pdf = new Finance::PDF2Text();
     my $m = $self->{mech};
     my @book;
 
-    my $text = $pdf->pdf2text( $m->content );
+    my $text = $self->__pdf2text( $m->content );
     
     for (split /\n/, $text) {
         next unless /^([0-9]{2}\.[0-9]{2}\.[0-9]{2}) (.*?) (?:([0-9]{2}\.[0-9]{2}\.[0-9]{2}) )?([0-9,.]+[+-])$/;
