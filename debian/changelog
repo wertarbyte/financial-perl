@@ -1,3 +1,9 @@
+financial-perl (0.1.4-2) unstable; urgency=low
+
+  * remove Finance::PDF2Text from barclaycard
+
+ -- Stefan Tomanek <stefan@pico.ruhr.de>  Wed, 04 Nov 2009 08:06:33 +0100
+
 financial-perl (0.1.4-1) unstable; urgency=low
 
   * add PDF parsing to barclaycard module
