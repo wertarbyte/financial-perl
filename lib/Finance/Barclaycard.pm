@@ -42,7 +42,7 @@ sub login {
     $m->follow_link( text => "HERE" );
 }
 
-sub extract_transactions {
+sub __process_html {
     my ($self) = @_;
     my $data = $self->{mech}->content();
 
@@ -82,7 +82,7 @@ sub statements {
     push @statements, $self->SUPER::statements();
 
     my @statements;
-    push @statements, "current";
+    push @statements, "current", 0..11;
     return @statements;
 }
 
@@ -123,6 +123,7 @@ sub transactions {
     LABEL: for my $l (@labels) {
         if ($l eq "default") {
             $fetch{current} = 1;
+            $fetch{0} = 1;
             next LABEL;
         }
         $fetch{$l} = 1;
@@ -131,21 +132,24 @@ sub transactions {
 
     if ($fetch{current} || $fetch{all}) {
         $m->follow_link( text_regex => qr/seit der letzten Konto.+bersicht/ );
-        push @transactions, $self->extract_transactions();
+        push @transactions, $self->__process_html();
         $fetch{current} = 0;
     }
 
-    if ($fetch{all}) {
-        $m->follow_link( text_regex => qr/Konto.+bersichten anzeigen/ );
+    $m->follow_link( text_regex => qr/Konto.+bersichten anzeigen/ );
         
-        my @links = $m->find_all_links( url_regex => qr!https://www.barclaycard\.de//service.php\?page=C2\.2p! );
+    my $statement_url = qr!https://www.barclaycard\.de//service.php\?page=C2\.2p&month=([0-9]+)!;
+    my @links = $m->find_all_links( url_regex => $statement_url );
 
-
-        for (@links) {
-            $m->get($_);
-            push @transactions, $self->__process_pdf();
-            $m->back();
-        }
+    for (@links) {
+        next unless $_->url() =~ $statement_url;
+        my $statement_id = $1;
+        next unless ( $fetch{all} || $fetch{$statement_id} );
+        $m->get($_);
+        push @transactions, $self->__process_pdf();
+        $m->back();
+        
+        $fetch{$statement_id} = 0;
     }
 
     $fetch{all} = 0 if defined $fetch{all};
