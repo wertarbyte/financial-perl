@@ -4,6 +4,7 @@ use base "Finance::WebCounter";
 use strict;
 
 require HTML::TreeBuilder::XPath;
+require Finance::PDF2Text;
 
 our $start_url = "https://www.barclaycard.de/";
 
@@ -106,6 +107,20 @@ sub transactions {
         $m->follow_link( text_regex => qr/seit der letzten Konto.+bersicht/ );
         push @transactions, $self->extract_transactions();
         $fetch{current} = 0;
+    }
+
+    if ($fetch{all}) {
+        $m->follow_link( text_regex => qr/Konto.+bersichten anzeigen/ );
+        
+        my @links = $m->find_all_links( url_regex => qr!https://www.barclaycard\.de//service.php\?page=C2\.2p! );
+
+        my $pdf = new Finance::PDF2Text();
+
+        for (@links) {
+            $m->get($_);
+            print $pdf->pdf2text( $m->content );
+            $m->back();
+        }
     }
 
     $fetch{all} = 0 if defined $fetch{all};
