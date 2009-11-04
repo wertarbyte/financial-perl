@@ -4,7 +4,6 @@ use base "Finance::WebCounter";
 use strict;
 
 require HTML::TreeBuilder::XPath;
-require Finance::PDF2Text;
 require File::Temp;
 
 our $start_url = "https://www.barclaycard.de/";
