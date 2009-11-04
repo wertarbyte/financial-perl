@@ -4,6 +4,8 @@ use base "Finance::WebCounter";
 use strict;
 
 require HTML::TreeBuilder::XPath;
+require Finance::PDF2Text;
+require File::Temp;
 
 our $start_url = "https://www.barclaycard.de/";
 
@@ -41,10 +43,9 @@ sub login {
     $m->follow_link( text => "HERE" );
 }
 
-sub extract_transactions {
+sub __process_html {
     my ($self) = @_;
     my $data = $self->{mech}->content();
-    #print $data;
 
     my @book;
     my $tree = new HTML::TreeBuilder::XPath;
@@ -82,8 +83,52 @@ sub statements {
     push @statements, $self->SUPER::statements();
 
     my @statements;
-    push @statements, "current";
+    push @statements, "current", 0..11;
     return @statements;
+}
+
+sub __pdf2text {
+    my ($self, $pdfdata) = @_;
+    my $f = File::Temp->new(
+        TEMPLATE => "pdf2text.XXXXXX",
+        TMPDIR => 1,
+        UNLINK => 1
+    );
+    $f->write($pdfdata);
+    $f->close();
+
+    my $output;
+    open( PDF, "pdftotext -raw ".$f->filename." - |" );
+    while(<PDF>) {
+        $output .= $_;
+    }
+    return $output;
+}
+
+sub __process_pdf {
+    my ($self) = @_;
+    my $m = $self->{mech};
+    my @book;
+
+    my $text = $self->__pdf2text( $m->content );
+    
+    for (split /\n/, $text) {
+        next unless /^([0-9]{2}\.[0-9]{2}\.[0-9]{2}) (.*?) (?:([0-9]{2}\.[0-9]{2}\.[0-9]{2}) )?([0-9,.]+[+-])$/;
+        my ($book, $desc, $rec, $value) = ($1, $2, $3, $4);
+        unless (defined $rec) {
+            $rec = $book;
+        }
+        $book =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
+        $rec =~ s/([0-9]{2})\.([0-9]{2})\.([0-9]{2})/20\3-\2-\1/;
+        
+        $value =~ s/[.,]//g;
+        my ($amount, $sign) = ($value =~ m/([0-9]+)([^[:digit:]]+)/);
+        $amount /= 100;
+        $amount *= -1 unless ($sign eq "+");
+
+        push @book, $self->construct_transaction( $book, $rec, $amount, $desc );
+    }
+    return @book;
 }
 
 sub transactions {
@@ -96,6 +141,7 @@ sub transactions {
     LABEL: for my $l (@labels) {
         if ($l eq "default") {
             $fetch{current} = 1;
+            $fetch{0} = 1;
             next LABEL;
         }
         $fetch{$l} = 1;
@@ -104,8 +150,24 @@ sub transactions {
 
     if ($fetch{current} || $fetch{all}) {
         $m->follow_link( text_regex => qr/seit der letzten Konto.+bersicht/ );
-        push @transactions, $self->extract_transactions();
+        push @transactions, $self->__process_html();
         $fetch{current} = 0;
+    }
+
+    $m->follow_link( text_regex => qr/Konto.+bersichten anzeigen/ );
+        
+    my $statement_url = qr!https://www.barclaycard\.de//service.php\?page=C2\.2p&month=([0-9]+)!;
+    my @links = $m->find_all_links( url_regex => $statement_url );
+
+    for (@links) {
+        next unless $_->url() =~ $statement_url;
+        my $statement_id = $1;
+        next unless ( $fetch{all} || $fetch{$statement_id} );
+        $m->get($_);
+        push @transactions, $self->__process_pdf();
+        $m->back();
+        
+        $fetch{$statement_id} = 0;
     }
 
     $fetch{all} = 0 if defined $fetch{all};
