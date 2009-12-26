@@ -1,3 +1,9 @@
+financial-perl (0.1.6-1) unstable; urgency=low
+
+  * fix regular expressions for new barclaycard PDFs
+
+ -- Stefan Tomanek <stefan@pico.ruhr.de>  Sat, 26 Dec 2009 21:29:57 +0100
+
 financial-perl (0.1.5-1) unstable; urgency=low
 
   * implement --list option
